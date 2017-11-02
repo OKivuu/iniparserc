@@ -1,0 +1,151 @@
+/*
+ * iniparserc.c
+ *
+ *  Created on: 2 de nov de 2017
+ *      Author: EKivuu
+ */
+#include <stdio.h>
+#include <string.h>
+
+#include "../inc/iniparserc.h"
+
+#define FILE_HANDLE                   FILE*
+#define ini_fs_open(h, filename)      (*(h) = fopen(filename, "r"))
+#define ini_fs_seek(h, pos, orig)     (fseek(*(h), pos, orig))
+#define ini_fs_avail(h)               (fseek(*(h), 0, SEEK_END) - fseek(*(h), 0, SEEK_CUR))
+#define ini_fs_read(h, buf, sz)       (fread(buf, sz, 1, *(h)))
+#define ini_fs_close(h)               (fclose(*(h)))
+
+#define PARSER_STS_READ_SESSION 0x01
+#define PARSER_STS_READ_KEY     0x02
+#define PARSER_STS_READ_VALUE   0x04
+
+char** IniParserC_GetSession(const char* iniFile, const char* sectionDlls, char** map)
+{
+  if (map)
+  {
+	FILE_HANDLE file;
+
+	ini_fs_open(&file, iniFile);
+
+	if (file)
+	{
+  	char buffer[1025] = {0};
+  	char buffer_aux[1025] = {0};
+  	char *p;
+  	char *s;
+  	char *k;
+  	char *v;
+  	int i, r, j;
+  	int status = 0x00;
+
+  	ini_fs_seek(&file, 0, SEEK_SET);
+  	while((r = ini_fs_avail(&file)))
+  	{
+    	j = strlen(buffer_aux);
+    	strncpy(buffer, buffer_aux, j);
+
+    	r = MIN(r, 1024);
+    	r -= j;
+    	ini_fs_read(&file, buffer+j, r);
+
+    	p = &buffer[0];
+
+    	if (status & PARSER_STS_READ_SESSION)
+      	goto IN_SESSION;
+
+    	while(p)
+    	switch (*p)
+    	{
+      	case '#':
+      	{
+        	//exclude comments: starting lines with '#'
+        	p--;
+        	if (*p)
+          	if (*p == '\r' || *p == '\n')
+            	while(p++ && *p && *p != '\r' && *p != '\n');
+
+        	if (!*p) goto PARSER_END;
+
+      	}break;
+      	case '[':
+      	{
+        	//search section
+        	s = ++p;
+        	for(i=0; *p && *p != ']'; p++, i++);
+
+        	if (!*p) goto PARSER_END;
+
+        	memset(buffer_aux, 0, 1025);
+        	strncpy(buffer_aux, s, i);
+        	if (memcmp(s, sectionDlls, i) == 0)
+        	{
+          	p++; //skip ']'
+          	while(1)
+          	{
+            	status = 0x0F;
+
+            	IN_SESSION:;
+
+            	//skip CR, LF
+            	while(*p && (*p == '\r' || *p == '\n' || *p == ' ')) p++;
+            	if (!*p) goto PARSER_END;
+
+            	//search key
+            	k = p;
+            	for(i=0; *p && *p != '=' && *p != '['; p++, i++);
+            	if (!*p) goto PARSER_END;
+            	if (*p=='[') break; //found another session
+
+            	if (status & PARSER_STS_READ_KEY)
+            	{
+              	memset(buffer_aux, 0, 1025);
+              	strncpy(buffer_aux, k, i);
+//              	ListAdd(map, buffer_aux);
+              	status -= PARSER_STS_READ_KEY;
+            	}
+
+            	//search value
+            	v = ++p;
+            	for(i=0; *p && *p != '\r' && *p != '\n'; p++, i++);
+            	if (!*p) goto PARSER_END;
+
+            	if (status & PARSER_STS_READ_VALUE)
+            	{
+              	memset(buffer_aux, 0, 1025);
+              	strncpy(buffer_aux, v, i);
+//              	ListAdd(map, buffer_aux);
+              	status -= PARSER_STS_READ_VALUE;
+            	}
+
+            	status -= PARSER_STS_READ_SESSION;
+          	}
+        	}
+      	}break;
+
+      	default:
+        	p++;
+        	if (!*p) goto PARSER_END;
+      	break;
+    	}
+
+
+    	PARSER_END:
+    	{
+      	//save last line
+      	p--;
+      	if (*p)
+        	for(i=0; *p != '\r' && *p != '\n'; p--, i++);
+
+      	memset(buffer_aux, 0, 1025);
+      	strncpy(buffer_aux, ++p, i);
+    	};
+  	}
+
+  	ini_fs_close(&file);
+	}
+  }
+
+  return map;
+}
+
