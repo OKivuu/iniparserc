@@ -92,7 +92,7 @@ char** IniParserC_GetSession(const char* iniFile, const char* sectionDlls, char*
 					k = p;
 					for(i=0; *p && *p != '=' && *p != '['; p++, i++);
 					if (!*p) goto PARSER_END;
-					if (*p=='[') break; //found another session
+					if (*p=='[') goto PARSER_END; //found another session
 
 					if (status & PARSER_STS_READ_KEY)
 					{
@@ -107,7 +107,7 @@ char** IniParserC_GetSession(const char* iniFile, const char* sectionDlls, char*
 					//search value
 					v = ++p;
 					for(i=0; *p && *p != '\r' && *p != '\n'; p++, i++);
-					if (!*p && r >= 0) goto PARSER_END;
+					if (!*v && !*p && r >= 0) goto PARSER_END;
 
 					if (status & PARSER_STS_READ_VALUE)
 					{
@@ -134,6 +134,7 @@ char** IniParserC_GetSession(const char* iniFile, const char* sectionDlls, char*
 			PARSER_END:
 			{
 				if (r < 0) break;
+        if (*p=='[') break;
 				//save last line
 				p--;
 				if (*p)
