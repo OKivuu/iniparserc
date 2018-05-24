@@ -27,8 +27,8 @@
 
 #define ini_mem_alloc(p, s)           (*(p) = calloc(1, s))
 #define ini_mem_realloc(p, s)         (*(p) = realloc(*(p), s))
-#define ini_mem_free(p)     	      (free((void*)*(p)))
+#define ini_mem_free(p)     	        (free((void*)*(p)))
 
-char** IniParserC_GetSession(const char* iniFile, const char* sectionDlls, char** map);
+char** IniParserC_GetSession(const char* iniFile, const char* sectionDlls, char** map, int trimRight);
 
 #endif /* INC_INIPARSERC_H_ */
