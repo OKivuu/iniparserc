@@ -11,7 +11,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#ifndef MIN
 #define MIN(x, y) (((x) < (y)) ? (x) : (y))
+#endif
 
 #ifndef NULL
 #define NULL ( (void *) 0)
