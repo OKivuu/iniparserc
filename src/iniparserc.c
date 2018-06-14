@@ -50,12 +50,16 @@ char** IniParserC_GetSession(const char* iniFile, const char* sectionDlls, char*
       ini_fs_seek(&file, 0, SEEK_SET);
       while((r = ini_fs_avail(&file)) > 0 || strlen(buffer_aux))
       {
-        j = strlen(buffer_aux);
-        memset(buffer, 0, 1024);
-        strncpy(buffer, buffer_aux, j);
+        if ((j = strlen(buffer_aux)))
+        {
+          memset(buffer, 0, 1024);
+          strncpy(buffer, buffer_aux, j);
+        }
 
-        r = MIN(r, 1024-j);
-        re = ini_fs_read(&file, buffer+j, r);
+        if ((r = MIN(r, 1024-j)))
+        {
+          re = ini_fs_read(&file, buffer+j, r);
+        }
 
         p = &buffer[0];
 
@@ -87,7 +91,7 @@ char** IniParserC_GetSession(const char* iniFile, const char* sectionDlls, char*
             memset(buffer_aux, 0, 1025);
             strncpy(buffer_aux, s, i);
 
-            if (memcmp(s, sectionDlls, i) == 0)
+            if (strcmp(buffer_aux, sectionDlls) == 0)
             {
               p++; //skip ']'
               while(1)
@@ -122,12 +126,13 @@ char** IniParserC_GetSession(const char* iniFile, const char* sectionDlls, char*
                   strncpy(buffer_aux, k, i);
                   map = IniMapAdd(map, buffer_aux);
                   status -= PARSER_STS_READ_KEY;
+                  memset(buffer_aux, 0, 1025);
                 }
 
                 //search value
                 v = ++p;
                 for(i=0; *p && *p != '\r' && *p != '\n'; p++, i++);
-                if (status & PARSER_STS_IN && (!*p || i==0) && r >= 0) goto PARSER_END;
+                if (status & PARSER_STS_IN && !*p && r >= 0) goto PARSER_END;
 
                 if (trimRight) for(; i>0 && *(v+i-1) == ' '; i--);
 
@@ -137,11 +142,12 @@ char** IniParserC_GetSession(const char* iniFile, const char* sectionDlls, char*
                   strncpy(buffer_aux, v, i);
                   map = IniMapAdd(map, buffer_aux);
                   status -= PARSER_STS_READ_VALUE;
+                  memset(buffer_aux, 0, 1025);
                 }
 
                 status -= PARSER_STS_READ_SESSION;
 
-                if (!status & PARSER_STS_IN) goto PARSER_END;
+                if (!(status & PARSER_STS_IN)  || !*p) goto PARSER_END;
               }
             }
             else { memset(buffer_aux, 0, 1025); p++; if (!*p) goto PARSER_END; }
@@ -160,7 +166,6 @@ char** IniParserC_GetSession(const char* iniFile, const char* sectionDlls, char*
           if (r < 0) break;
           if (*p=='[') break;
 
-
           if (status & PARSER_STS_READ_KEY || status & PARSER_STS_READ_VALUE)
           {
             //save last line
@@ -173,8 +178,8 @@ char** IniParserC_GetSession(const char* iniFile, const char* sectionDlls, char*
             memset(buffer_aux, 0, 1025);
             strncpy(buffer_aux, ++p, i);
           }
-
         };
+
       }
 
       ini_fs_close(&file);
