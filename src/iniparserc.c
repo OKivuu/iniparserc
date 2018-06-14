@@ -127,7 +127,7 @@ char** IniParserC_GetSession(const char* iniFile, const char* sectionDlls, char*
                 //search value
                 v = ++p;
                 for(i=0; *p && *p != '\r' && *p != '\n'; p++, i++);
-                if (status & PARSER_STS_IN && !*p && r >= 0) goto PARSER_END;
+                if (status & PARSER_STS_IN && (!*p || i==0) && r >= 0) goto PARSER_END;
 
                 if (trimRight) for(; i>0 && *(v+i-1) == ' '; i--);
 
@@ -144,7 +144,7 @@ char** IniParserC_GetSession(const char* iniFile, const char* sectionDlls, char*
                 if (!status & PARSER_STS_IN) goto PARSER_END;
               }
             }
-            else { p++; if (!*p) goto PARSER_END; }
+            else { memset(buffer_aux, 0, 1025); p++; if (!*p) goto PARSER_END; }
 
           }break;
 
