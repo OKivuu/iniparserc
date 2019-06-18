@@ -13,7 +13,7 @@
  *  Created on: 2 de nov de 2017
  *      Author: EKivuu
  */
-#include "iniparserc.h"
+#include "../inc/iniparserc.h"
 
 #define PARSER_STS_READ_SESSION 0x01
 #define PARSER_STS_READ_KEY     0x02
