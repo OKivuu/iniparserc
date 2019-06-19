@@ -19,6 +19,7 @@
 #define PARSER_STS_READ_KEY     0x02
 #define PARSER_STS_READ_VALUE   0x04
 #define PARSER_STS_IN           0x08
+#define PARSER_STS_NOT_EMPTY    0x10
 
 static int ini_fs_avail(FILE_HANDLE* h);
 static char** IniMapAdd(char** map, const char* value);
@@ -63,8 +64,15 @@ char** IniParserC_GetSession(const char* iniFile, const char* sectionDlls, char*
 
         p = &buffer[0];
 
-        if (r == 0 && strlen(buffer_aux) > 0)
-          status &= ~PARSER_STS_IN; //turn off
+        if (r == 0)
+        {
+          status -= PARSER_STS_NOT_EMPTY;
+
+          if (strlen(buffer_aux) > 0)
+          {
+            status &= ~PARSER_STS_IN; //turn off
+          }
+        }
 
         if (status & PARSER_STS_READ_SESSION)
           goto IN_SESSION;
@@ -96,7 +104,7 @@ char** IniParserC_GetSession(const char* iniFile, const char* sectionDlls, char*
               p++; //skip ']'
               while(1)
               {
-                status = 0x0F;
+                status = 0x1F;
 
                 IN_SESSION:{;}
 
@@ -168,6 +176,12 @@ char** IniParserC_GetSession(const char* iniFile, const char* sectionDlls, char*
 
           if (status & PARSER_STS_READ_KEY || status & PARSER_STS_READ_VALUE)
           {
+            if (status & PARSER_STS_NOT_EMPTY)
+            {
+              memset(buffer_aux, 0, 1025);
+              break;
+            }
+
             //save last line
             p--;
             if (*p)

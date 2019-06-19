@@ -1,8 +1,8 @@
+#BUILD_MODE := debug
+
 PATH_SRC := ./src
 PATH_OBJ := ./obj
 PATH_BIN := ./bin
-
-BUILD_MODE := run
 
 CC := gcc
 LIBER := ar
@@ -21,11 +21,10 @@ OBJS := $(addprefix $(PATH_OBJ)/, $(OBJS))
 CFLAGS = -c
 
 ifeq ($(BUILD_MODE),debug)
-	CFLAGS += -g
-else ifeq ($(BUILD_MODE),run)
-	CFLAGS += -O2
+	CFLAGS += -g3
 else
-	$(error Build mode $(BUILD_MODE) not supported by this Makefile)
+	CFLAGS += -O2
+	#$(error Build mode $(BUILD_MODE) not supported by this Makefile)
 endif
 
 DEPFLAGS = -MT $@ -MMD -MF $(PATH_OBJ)/$*.Td
