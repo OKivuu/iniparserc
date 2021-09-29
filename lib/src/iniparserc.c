@@ -45,12 +45,14 @@ char** IniParserC_GetSession(const char* iniFile, const char* sectionDlls, char*
       char *s;
       char *k;
       char *v;
-      int i, r, j, re;
+      int i, lr, r, j, re;
       int status = 0x00;
 
       ini_fs_seek(&file, 0, SEEK_SET);
       while((r = ini_fs_avail(&file)) > 0 || strlen(buffer_aux))
       {
+        lr = r;
+
         if ((j = strlen(buffer_aux)))
         {
           memset(buffer, 0, 1024);
@@ -72,6 +74,10 @@ char** IniParserC_GetSession(const char* iniFile, const char* sectionDlls, char*
           {
             status &= ~PARSER_STS_IN; //turn off
           }
+        }
+        else if (lr == re) //if there is still same data in the end, but its the end
+        {
+          r = -1;
         }
 
         if (status & PARSER_STS_READ_SESSION)
@@ -179,7 +185,6 @@ char** IniParserC_GetSession(const char* iniFile, const char* sectionDlls, char*
             if (status & PARSER_STS_NOT_EMPTY)
             {
               memset(buffer_aux, 0, 1025);
-              break;
             }
 
             //save last line
