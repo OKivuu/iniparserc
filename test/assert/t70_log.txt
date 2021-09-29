@@ -1,0 +1,2 @@
+[t70] result in map { 18rrrrrrrrrrrrrrrrrr : rrrrrrrrrrrrrrrrrrrr }
+[t70] result in map { 19ssssssssssssss : ssssssssssssssssss }

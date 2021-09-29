@@ -1,0 +1,1 @@
+[t53] result in map { key1 : value1@!#$% }
