@@ -1,0 +1,2 @@
+[t54] result in map { key1 : value1 }
+[t54] result in map { key2 : value2 }

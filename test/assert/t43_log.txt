@@ -1,0 +1,2 @@
+[t43] result in map { key1 :  }
+[t43] result in map { key2 :  }

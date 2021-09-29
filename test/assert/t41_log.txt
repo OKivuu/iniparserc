@@ -1,0 +1,1 @@
+[t41] result in map { key1 :  }

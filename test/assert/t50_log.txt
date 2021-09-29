@@ -1,0 +1,1 @@
+[t50] result in map { key1 : value1 }
