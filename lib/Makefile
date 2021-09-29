@@ -57,4 +57,5 @@ $(PATH_OBJ)/%.o : %.c $(PATH_OBJ)/%.d
 	@echo " DONE!"
 
 clean:
-	rm -fr iniparserc_test $(OBJS)
+	rm -fr iniparserc_lib $(OBJS)
+	rm -fr $(PATH_BIN)/iniparserc.a
