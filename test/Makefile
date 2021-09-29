@@ -48,3 +48,4 @@ $(PATH_OBJ)/%.o:	$(PATH_SRC)/%.c
 
 clean:
 	rm -fr iniparserc_test $(OBJS)
+	rm -fr $(PATH_BIN)/iniparserc_test.exe
