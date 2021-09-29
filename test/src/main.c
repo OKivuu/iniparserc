@@ -14,10 +14,12 @@
 #include "iniparserc.h"
 
 #define TEST_FILES_PATH "../samples/"
-#define TEST_MAX_RANGE 70
+#define TEST_ASSERT_FILES_PATH "../assert/"
+#define TEST_MAX_RANGE 80
 
 static void create_log_folder();
 static void print_map(char** map, const char* testLabel);
+static void assert_log_files(const char* testLabel);
 
 int main(int argc, char *argv[])
 {
@@ -47,10 +49,11 @@ int main(int argc, char *argv[])
 
 		if (testFile)
 		{
-			printf ("Executing %s test...\n", test);
+			printf ("Executing %s test...", test);
 
 			map = IniParserC_GetSession((const char*) testFileName, "MYSESSION", map, 1);
 			print_map(map, test);
+			assert_log_files(test);
 			t++;
 
 			ini_fs_close(&testFile);
@@ -124,5 +127,62 @@ void print_map(char** map, const char* testLabel)
 
 		ini_fs_close(&logFile);
 	}
+}
+
+void assert_log_files(const char* testLabel)
+{
+	char ch1 = '\0';
+	char ch2 = '\0';
+	int flag = 0;
+	int line = 0;
+	int col = 0;
+	int bytes = 0;
+	FILE_HANDLE fp1 = NULL;
+	FILE_HANDLE fp2 = NULL;
+	char fp1Name [32] = {0};
+	char fp2Name [32] = {0};
+
+	sprintf(fp1Name, "./log/%s_log.txt", testLabel);
+	sprintf(fp2Name, "%s%s_log.txt", TEST_ASSERT_FILES_PATH, testLabel);
+
+	ini_fs_open(&fp1, fp1Name);
+	ini_fs_open(&fp2, fp2Name);
+
+	do
+	{
+		ch1 = fgetc(fp1);
+		ch2 = fgetc(fp2);
+
+		// Increment line
+		if (ch1 == '\n' || ch1 == '\r')
+		{
+			line += 1;
+			col = 0;
+		}
+
+		if(ch1 != ch2)
+		{
+			ini_fs_seek(&fp1, -1, SEEK_CUR);
+			ini_fs_seek(&fp2, -1, SEEK_CUR);
+			flag = 1;
+			break;
+		}
+
+		col++;
+		bytes++;
+
+	} while (ch1 != EOF && ch2 != EOF);
+
+	if (flag)
+	{
+		printf("\nAssert failed! Line: %d, col: %d (bytes:%d)\n", line, col, bytes);
+	}
+	else
+	{
+		printf(" OK!\n", ftell(fp1)+1);
+	}
+
+	ini_fs_close(&fp1);
+	ini_fs_close(&fp2);
 }
 
